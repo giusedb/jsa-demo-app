@@ -1,0 +1,24 @@
+web:
+  name: 'jsalchemy'
+  host: localhost
+  port: 4477
+  reload: true
+  use_realtime: false
+  cookie_token: true
+  token_key: __token__
+  root_endpoint: 'jsalchemy'
+context:
+  db:
+#    url: 'postgresql+asyncpg://gdb:gdb@localhost:5432/projects'
+    url: 'sqlite+aiosqlite:///test.db'
+    pool_size: 20
+    max_overflow: 0
+    pool_timeout: 30
+    pool_recycle: 1800
+    echo: true
+  redis:
+    url: 'redis://localhost:6379/1'
+authentication:
+  salt: "$2b$05$/vgmzVaeg8BwTmFvVQlQ1."
+  identity-model: modules.base.auth.Identity
+  identified-by: email
