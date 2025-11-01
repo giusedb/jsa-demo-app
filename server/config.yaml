@@ -9,7 +9,6 @@ web:
   root_endpoint: 'jsalchemy'
 context:
   db:
-#    url: 'postgresql+asyncpg://gdb:gdb@localhost:5432/projects'
     url: 'sqlite+aiosqlite:///test.db'
     pool_size: 20
     max_overflow: 0
