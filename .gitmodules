@@ -1,0 +1,15 @@
+[submodule "libs/jsa-authentication"]
+	path = libs/jsa-authentication
+	url = git@github.com:giusedb/SQLAlchemy-js-authentication.git
+[submodule "libs/jsa-authorization"]
+	path = libs/jsa-authorization
+	url = git@github.com:giusedb/SQLAlchemy-js-auth.git
+[submodule "libs/jsa-context"]
+	path = libs/jsa-context
+	url = git@github.com:giusedb/SQLAlchemy-js-context.git
+[submodule "libs/jsa-api"]
+	path = libs/jsa-api
+	url = git@github.com:giusedb/SQLAlchemy-js-api.git
+[submodule "libs/jsa-client"]
+	path = libs/jsa-client
+	url = git@github.com:giusedb/jsalchemy.git
