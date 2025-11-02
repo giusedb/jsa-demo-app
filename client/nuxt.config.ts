@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
+  css: ['assets/main.css'],
   modules: [
     '@nuxt/content',
     '@nuxt/eslint',
@@ -10,5 +11,18 @@ export default defineNuxtConfig({
     '@nuxt/scripts',
     '@nuxt/test-utils',
     '@nuxt/ui'
-  ]
+  ],
+  nitro: {
+    routeRules: {
+      '/jsalchemy/**': {
+        proxy: 'http://localhost:8000/jsalchemy/**',
+        ssr: false,
+      },
+      '/auth/**': {
+        proxy: 'http://localhost:8000/auth/**',
+        ssr: false,
+      }
+    }
+  },
+
 })
