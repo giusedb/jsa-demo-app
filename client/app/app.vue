@@ -1,4 +1,6 @@
 <script setup>
+import { orm } from '~/composables/JSAlchemy';
+provide('orm', orm);
 
 const toast = useToast();
 orm.on('error-json', (data, status, url, payload, request) => {
