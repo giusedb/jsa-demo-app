@@ -26,3 +26,6 @@ server/poetry.lock
 *.pyc
 run.sh
 server/test.db
+client/AGENTS.md
+client/package-lock.json
+AGENTS.md
