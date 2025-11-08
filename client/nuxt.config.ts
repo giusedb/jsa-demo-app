@@ -15,11 +15,11 @@ export default defineNuxtConfig({
   nitro: {
     routeRules: {
       '/jsalchemy/**': {
-        proxy: 'http://localhost:8000/jsalchemy/**',
+        proxy: 'http://localhost:4000/jsalchemy/**',
         ssr: false,
       },
       '/auth/**': {
-        proxy: 'http://localhost:8000/auth/**',
+        proxy: 'http://localhost:4000/auth/**',
         ssr: false,
       }
     }

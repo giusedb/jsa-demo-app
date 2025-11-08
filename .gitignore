@@ -24,3 +24,5 @@ logs
 !.env.example
 server/poetry.lock
 *.pyc
+run.sh
+server/test.db

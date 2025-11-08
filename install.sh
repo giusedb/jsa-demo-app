@@ -35,7 +35,7 @@ echo "✅ Submodules updated successfully"
 # 2. Install JavaScript packages in client directory
 echo "🔧 Installing JavaScript dependencies..."
 
-cd client
+pushd client
 
 if [ -f "package.json" ]; then
     echo "npm install..."
@@ -45,12 +45,12 @@ else
 fi
 
 # Return to project root
-cd ../..
+popd
 
 # 3. Install Python packages in server directory
 echo "🐍 Installing Python dependencies..."
 
-cd server
+pushd server
 
 # Check if poetry is available
 if command_exists "poetry"; then
@@ -76,7 +76,7 @@ else
 fi
 
 # Return to project root
-cd ..
+popd
 
 echo "✅ Python dependencies installed successfully"
 
@@ -103,11 +103,11 @@ echo "✅ Password confirmed. Setting up database..."
 
 # 5. Run database initialization with the password
 echo "🚀 Initializing database with admin user..."
-cd server
+pushd server
 
 # Run the database initialization command
-echo "Running: poetry run python main.py db init -p \"$admin_password\""
-poetry run python main.py db init -p "<password>"
+echo "Running: poetry run python main.py db init -p <password>"
+poetry run python main.py db init -p "$admin_password"
 
 # Check if command was successful
 if [ $? -eq 0 ]; then
@@ -120,8 +120,7 @@ if [ $? -eq 0 ]; then
     echo "   Password: [set during installation]"
     echo ""
     echo "🚀 Next steps:"
-    echo "   - Run './install.sh' to install dependencies"
-    echo "   - Run './dev.sh' to start development servers"
+    echo "   - Run './run.sh' to start development servers"
     echo "   - Visit http://localhost:3000 to access the application"
 else
     echo "❌ Database initialization failed!"
@@ -129,7 +128,7 @@ else
 fi
 
 # Return to project root
-cd ..
+popd
 
 echo "✅ Installation completed successfully!"
 
@@ -156,24 +155,25 @@ echo "🚀 Starting development environment..."
 
 # Start frontend
 echo "Starting Nuxt.js frontend..."
-cd client/app
+pushd client
 npm run dev &
 FRONTEND_PID=$!
+popd
 
 # Start backend (adjust as needed)
 echo "Starting Python backend..."
-cd ../..
-cd server
+pushd server
 # Add your actual backend start command here:
-# python3 app/main.py &
-# BACKEND_PID=$!
+.venv/bin/python main.py web blacksheep -p 4000 --debug &
+BACKEND_PID=$!
 
 echo "✅ Development environment started!"
 echo "Frontend: http://localhost:3000"
-echo "Backend: Adjust as needed"
+echo "Backend: http://localhost:4000"
 
 # Wait for processes (optional)
-# wait $FRONTEND_PID $BACKEND_PID
+wait $FRONTEND_PID $BACKEND_PID
+popd
 EOF
 
 chmod +x run.sh
