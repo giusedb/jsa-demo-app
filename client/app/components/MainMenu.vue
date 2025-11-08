@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { inject } from 'vue';
 
 const orm = inject('orm');
 
@@ -31,6 +32,13 @@ const mainMenu = computed(() => {
   }
   return menu;
 });
+
+onMounted(() => {
+  const requireLogin = componentsMenu.map(x => x.href)
+  if (!orm.user && requireLogin.includes(window.location.pathname)) {
+    navigateTo('/login');
+  }
+})
 
 </script>
 
