@@ -42,6 +42,7 @@ const submit = async (evt: FormSubmitEvent<Schema>) => {
       <u-auth-form :title="'Login'" :fields="fields"
                    :loading="view.loading"
                    icon="i-mdi-fingerprint"
+                   :schema="schema"
                    :submit="{label: 'Log in', variant: 'subtle', icon: 'i-mdi-login'}"
                    description="Welcome to JSAlchemy demo application"
                    @submit="submit">
