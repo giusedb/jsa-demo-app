@@ -7,7 +7,7 @@ from jsalchemy_api.utils import dict_merge
 
 default_config = dict(
     web=dict(
-        port=7999,
+        port=4000,
         host='0.0.0.0',
         use_cookies=False,
         token_key='__token__',
