@@ -13,7 +13,9 @@ export default defineComponent({
       defaultTodo: {
         title: '',
         description: '',
-        completed: false
+        completed: false,
+        recordPerPage: 5,
+        page: 1
       },
       todo: {},
     }
@@ -44,8 +46,10 @@ export default defineComponent({
 </script>
 
 <template>
-  <record-set resource="Todo" :filter="{}">
-    <template #default="{ records }">
+  <record-set resource="Todo" :filter="{}" name="primary-todos"
+              :record-per-page="recordPerPage"
+              :sort="['id']">
+    <template #default="{ records, total }">
       <u-card class="w-full">
         <template #header>
           <h2>Just a simple todo app</h2>
@@ -83,6 +87,12 @@ export default defineComponent({
 
           </u-form>
           <u-page-list title="Todos" class="col-span-1">
+            <u-pagination :items-per-page="recordPerPage" size="lg" @update:page="page = $event"
+                          :total-items="total"/>
+            <u-field-group>
+              <u-label>Records per page</u-label>
+              <u-select v-model="recordPerPage" :items="[5, 10, 20]"/>
+            </u-field-group>
             <u-card v-for="todo in records" :key="todo.id" class="mb-3 hover:shadow-lg hover:shadow-gray-500">
               <template #header>
                 <div class="flex justify-between">
