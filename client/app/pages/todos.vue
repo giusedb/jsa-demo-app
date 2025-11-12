@@ -14,10 +14,10 @@ export default defineComponent({
         title: '',
         description: '',
         completed: false,
-        recordPerPage: 5,
-        page: 1
       },
       todo: {},
+      recordPerPage: 5,
+      page: 1,
     }
   },
   methods: {
@@ -37,7 +37,7 @@ export default defineComponent({
     toggleCompletion(todo) {
       todo.completed = !todo.completed;
       todo.$save();
-    }
+    },
   },
   mounted(): any {
     this.todo = Object.assign({}, this.defaultTodo);
@@ -46,10 +46,9 @@ export default defineComponent({
 </script>
 
 <template>
-  <record-set resource="Todo" :filter="{}" name="primary-todos"
-              :record-per-page="recordPerPage"
-              :sort="['id']">
-    <template #default="{ records, total }">
+  <record-set ref="recordSet" resource="Todo" :filter="{}" :page="page"
+              name="primary-todos"  :records-per-page="recordPerPage" :sort="['~id']" >
+    <template #default="{ records, total, loading }">
       <u-card class="w-full">
         <template #header>
           <h2>Just a simple todo app</h2>
@@ -62,6 +61,7 @@ export default defineComponent({
             that is not part of the default <i>u-button</i> or <i>u-input</i> or <i>u-textarea</i>
           </p>
         </template>
+        <u-pagination :total="total" v-model:page="page" :sibling-count="10"/>
         <div class="grid grid-cols-2">
           <u-form class="border-e border-e-gray-700 me-3 pe-2 col-span-1">
               <u-form-field label="Title">
@@ -87,30 +87,32 @@ export default defineComponent({
 
           </u-form>
           <u-page-list title="Todos" class="col-span-1">
-            <u-pagination :items-per-page="recordPerPage" size="lg" @update:page="page = $event"
-                          :total-items="total"/>
-            <u-field-group>
-              <u-label>Records per page</u-label>
-              <u-select v-model="recordPerPage" :items="[5, 10, 20]"/>
-            </u-field-group>
+            <h4></h4>
+            <div class="flex flex-row content-between">
+              <u-form-field class="w-full">
+                Records per page: <u-select v-model="recordPerPage" :items="[5, 10, 20]"/>
+              </u-form-field>
+            </div>
             <u-card v-for="todo in records" :key="todo.id" class="mb-3 hover:shadow-lg hover:shadow-gray-500">
-              <template #header>
-                <div class="flex justify-between">
-                  <h4>
-                    <u-icon :name="todo.completed ? 'i-nrk-media-completed' : 'i-nrk-progress'"
-                            @click="toggleCompletion(todo)"/>
-                    {{ todo.title }}
-                  </h4>
-                  <div>
-                    <u-button variant="subtle" icon="i-mdi-pencil" color="secondary"
-                              class="mx-1" @click="edit(todo)" />
-                    <u-button variant="subtle" icon="i-mdi-delete" color="error"
-                              class="mx-1" @click="todo.$delete()" />
+                <template #header>
+                  <div class="flex justify-between">
+                    <u-skeleton v-if="loading"/>
+                    <h4 v-else>
+                      <u-icon :name="todo.completed ? 'i-nrk-media-completed' : 'i-nrk-progress'"
+                              @click="toggleCompletion(todo)"/>
+                      {{ todo.title }}
+                    </h4>
+                    <div>
+                      <u-button variant="subtle" icon="i-mdi-pencil" color="secondary"
+                                class="mx-1" @click="edit(todo)" />
+                      <u-button variant="subtle" icon="i-mdi-delete" color="error"
+                                class="mx-1" @click="todo.$delete()" />
+                    </div>
                   </div>
-                </div>
-              </template>
-                  <p>{{ todo.description }}</p>
-            </u-card>
+                </template>
+                <u-skeleton v-if="loading" />
+                <p v-else>{{ todo.description }}</p>
+              </u-card>
           </u-page-list>
         </div>
       </u-card>
