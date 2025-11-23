@@ -4,7 +4,8 @@ import { inject } from 'vue';
 const orm = inject('orm');
 
 const componentsMenu = [
-  {label: 'Todos', href: '/todos', icon: 'i-mdi-format-list-checks'}
+  {label: 'Todos', href: '/todos', icon: 'i-mdi-format-list-checks'},
+  {label: 'Playground', href: '/test', icon: 'i-material-symbols-playground-2-outline-rounded'}
 ]
 
 const identifiedMenu = [
