@@ -61,7 +61,8 @@ export default defineComponent({
             that is not part of the default <i>u-button</i> or <i>u-input</i> or <i>u-textarea</i>
           </p>
         </template>
-        <u-pagination :total="total" v-model:page="page" :sibling-count="10"/>
+        <u-pagination v-if="total > recordPerPage" :total="total" v-model:page="page" :sibling-count="10"/>
+        <div>Total: {{ total }}</div>
         <div class="grid grid-cols-2">
           <u-form class="border-e border-e-gray-700 me-3 pe-2 col-span-1">
               <u-form-field label="Title">
