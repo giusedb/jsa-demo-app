@@ -8,7 +8,7 @@
                 flex items-center justify-between">
         <slot/>
     </div>
-    <Footer class="absolute w-full bottom-0"/>
+    <Footer class="w-full bottom-0 mt-10"/>
   </div>
 </template>
 

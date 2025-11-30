@@ -101,7 +101,7 @@ export default defineComponent({
                     <h4 v-else>
                       <u-icon :name="todo.completed ? 'i-nrk-media-completed' : 'i-nrk-progress'"
                               @click="toggleCompletion(todo)"/>
-                      {{ todo.title }}
+                      {{ todo.title }} ( {{ todo.id }} )
                     </h4>
                     <div>
                       <u-button variant="subtle" icon="i-mdi-pencil" color="secondary"

@@ -10,7 +10,17 @@ orm.on('error-json', (data, status, url, payload, request) => {
     description: `AJAX error ${status} with payload ${JSON.stringify(payload)}`,
     icon: 'i-line-md-alert'})
 });
+orm.on('error', (message) => {
+  console.error(message);
+  toast.add({
+    title: "Error occurred",
+    color: 'error',
+    description: `details: ${message}`,
+    icon: 'i-line-md-alert'});
+});
 global.orm = orm;
+global.toast = toast;
+
 </script>
 
 <template>
@@ -18,6 +28,7 @@ global.orm = orm;
     <NuxtRouteAnnouncer />
     <NuxtLayout>
       <NuxtPage ref="page"/>
+      <UToaster />
     </NuxtLayout>
   </div>
 </template>
