@@ -23,3 +23,5 @@ authentication:
   salt: "$2b$05$/vgmzVaeg8BwTmFvVQlQ1."
   identity-model: modules.base.auth.Identity
   identified-by: email
+realtime:
+  port: 7998

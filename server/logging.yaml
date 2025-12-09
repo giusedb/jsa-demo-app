@@ -20,6 +20,10 @@ loggers:
     level: DEBUG
     handlers: [console]
     propagate: no
+  web.realtime:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
 root:
   level: INFO
   handlers: [console]

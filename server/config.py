@@ -11,7 +11,6 @@ default_config = dict(
         host='0.0.0.0',
         use_cookies=False,
         token_key='__token__',
-        realtime=False,
         reload=False,
         root_endpoint='/JSAlchemy',
         session=dict(
@@ -19,6 +18,12 @@ default_config = dict(
         ),
         auth=dict(
             salt='replace me'
+        ),
+        # realtime=False,
+        realtime=dict(
+            host='0.0.0.0',
+            port=7998,
+            redis_channel='js-router'
         )
     ),
     db=dict(

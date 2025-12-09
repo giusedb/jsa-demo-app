@@ -4,6 +4,11 @@ const ormOptions = {
   endpoint: '/jsalchemy',
   autologin: true,
   keepSession: 3600,
+  ws: {
+    host: 'localhost',
+    port: 7998,
+    channel: 'js-router'
+  }
 };
 
 const handlers = {
