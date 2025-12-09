@@ -5,10 +5,8 @@ export default defineComponent({
   name: "Sorted",
   inject: {orm},
   props: {
-    recordSet: {
-      type: Object,
-      required: true
-    }
+    recordSet: { type: Object, required: true },
+    initSorted: { type: String, default: null },
   },
   data() {
     return {
@@ -24,6 +22,7 @@ export default defineComponent({
     },
     pages() {
       const x = this.touch;
+      if (!this.recordSet.resource) { return [] }
       if (!(this.sorted in this.recordSet.sortedPks))
         return [];
       const pages = this.recordSet.sortedPks[this.sorted].idPages;
@@ -67,33 +66,37 @@ export default defineComponent({
     });
     this.recordSet.on('refresh', () => {
       this.touch ++;
-    })
+    });
+    if (this.initSorted) {
+      this.sorted = this.initSorted;
+    }
   }
 })
 </script>
 
 <template>
-  <div class="flex justify-between w-full">
-    <u-form-field label="Select the sorting model to moitor">
-      <u-badge v-for="s in sorteds" :key="s"
-               :label="s" :color="s === sorted ? 'primary' : 'secondary'"
-                @click="sorted = s"/>
-    </u-form-field>
-    <div>{{ sorted }}</div>
-  </div>
-  <div class="flex justify-between">
+  <template v-if="recordSet">
+    <div class="flex justify-between w-full">
+      <u-form-field label="Select the sorting model to moitor">
+        <u-badge v-for="s in sorteds" :key="s"
+                 :label="s" :color="s === sorted ? 'primary' : 'secondary'"
+                  @click="sorted = s"/>
+      </u-form-field>
+      <div>{{ sorted }}</div>
+    </div>
+    <div class="flex justify-between">
     <div>
       <h4>Items</h4>
       <table class="pages">
         <tbody>
-        <tr v-for="page in pages">
-          <th class="w-10">
-            <strong :class="page.incomplete ? 'bg-error-300' : ''">{{ page.page }} </strong>
-          </th>
-          <td v-for="rec in page.records" class="id-cell" :class="rec.collected ? 'bg-success-700' : 'bg-error-700'">
-            {{ rec.pk }}
-          </td>
-        </tr>
+          <tr v-for="page in pages">
+            <th class="w-10">
+              <strong :class="page.incomplete ? 'bg-error-300' : ''">{{ page.page }} </strong>
+            </th>
+            <td v-for="rec in page.records" class="id-cell" :class="rec.collected ? 'bg-success-700' : 'bg-error-700'">
+              {{ rec.pk }}
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -101,9 +104,11 @@ export default defineComponent({
       <h5>Pending items</h5>
       <table>
         <thead>
-          <th>id</th>
-          <th>min</th>
-          <th>max</th>
+          <tr>
+            <th>id</th>
+            <th>min</th>
+            <th>max</th>
+          </tr>
         </thead>
         <tbody>
           <tr v-for="p in pendings">
@@ -115,6 +120,7 @@ export default defineComponent({
       </table>
     </div>
   </div>
+  </template>
 </template>
 
 <style scoped>
