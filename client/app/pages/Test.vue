@@ -94,10 +94,6 @@ export default defineComponent({
           <table>
             <tbody>
             <tr>
-              <td colspan="2">
-              </td>
-            </tr>
-            <tr>
               <td>TotalCount</td>
               <td class="text-teal-600">{{ totalCount }}</td>
             </tr>
@@ -125,7 +121,7 @@ export default defineComponent({
           </table>
         </div>
         <div class="col-span-1">
-          <sorted v-if="recSet" :record-set="recSet"/>
+          <sorted v-if="recSet" :record-set="recSet" init-sorted="|title"/>
         </div>
       </div>
     </u-card>
@@ -134,11 +130,10 @@ export default defineComponent({
         <h3>Records</h3>
       </template>
       <u-page-list ref="list" v-if="records.length">
-        <u-card v-for="record in records"
-                :title="record.title">
+        <u-card v-for="record in records" :key="record?.id">
           <div class="flex justify-between">
             <div>
-              {{ record.title }} ({{ record.id }})
+              {{ record?.title }} ({{ record?.id }})
             </div>
             <u-button @click="record.$delete()"
                       variant="subtle"

@@ -18,6 +18,7 @@ export default defineComponent({
       todo: {},
       recordPerPage: 5,
       page: 1,
+      recSet: null,
     }
   },
   methods: {
@@ -26,10 +27,12 @@ export default defineComponent({
       const todo = new Todo(Object.assign({}, this.todo));
       await todo.$save();
       Object.assign(this.todo, this.defaultTodo);
+      this.$refs.title.inputRef.focus();
     },
     async updateTodo() {
       await this.todo.$save();
       this.todo = Object.assign({}, this.defaultTodo);
+      this.$refs.title.inputRef.focus();
     },
     edit(todo) {
       this.todo = todo.$clone();
@@ -47,7 +50,8 @@ export default defineComponent({
 
 <template>
   <record-set ref="recordSet" resource="Todo" :filter="{}" :page="page"
-              name="primary-todos"  :records-per-page="recordPerPage" :sort="['~id']" >
+              name="primary-todos"  :records-per-page="recordPerPage" :sort="['~id']"
+              @recordSet="recSet = $event">
     <template #default="{ records, total, loading }">
       <u-card class="w-full">
         <template #header>
@@ -61,12 +65,12 @@ export default defineComponent({
             that is not part of the default <i>u-button</i> or <i>u-input</i> or <i>u-textarea</i>
           </p>
         </template>
-        <u-pagination v-if="total > recordPerPage" :total="total" v-model:page="page" :sibling-count="10"/>
-        <div>Total: {{ total }}</div>
+        <u-pagination v-if="total > recordPerPage" :total="total"
+                      v-model:page="page" :sibling-count="7" :items-per-page="recordPerPage"/>
         <div class="grid grid-cols-2">
           <u-form class="border-e border-e-gray-700 me-3 pe-2 col-span-1">
               <u-form-field label="Title">
-                <u-input v-model="todo.title" icon="i-mdi-format-title"
+                <u-input v-model="todo.title" icon="i-mdi-format-title" ref="title"
                          class="w-full" placeholder="Todo's title"/>
               </u-form-field>
               <u-form-field label="Description">
@@ -85,7 +89,7 @@ export default defineComponent({
 
                 </div>
               </u-form-field>
-
+              <sorted v-if="recSet" :record-set="recSet"/>
           </u-form>
           <u-page-list title="Todos" class="col-span-1">
             <h4></h4>
@@ -95,25 +99,25 @@ export default defineComponent({
               </u-form-field>
             </div>
             <u-card v-for="todo in records" :key="todo.id" class="mb-3 hover:shadow-lg hover:shadow-gray-500">
-                <template #header>
-                  <div class="flex justify-between">
-                    <u-skeleton v-if="loading"/>
-                    <h4 v-else>
-                      <u-icon :name="todo.completed ? 'i-nrk-media-completed' : 'i-nrk-progress'"
-                              @click="toggleCompletion(todo)"/>
-                      {{ todo.title }} ( {{ todo.id }} )
-                    </h4>
-                    <div>
-                      <u-button variant="subtle" icon="i-mdi-pencil" color="secondary"
-                                class="mx-1" @click="edit(todo)" />
-                      <u-button variant="subtle" icon="i-mdi-delete" color="error"
-                                class="mx-1" @click="todo.$delete()" />
-                    </div>
+              <template #header>
+                <div class="flex justify-between">
+                  <u-skeleton v-if="loading"/>
+                  <h4 v-else>
+                    <u-icon :name="todo.completed ? 'i-nrk-media-completed' : 'i-nrk-progress'"
+                            @click="toggleCompletion(todo)"/>
+                    {{ todo.title }} ( {{ todo.id }} )
+                  </h4>
+                  <div>
+                    <u-button variant="subtle" icon="i-mdi-pencil" color="secondary"
+                              class="mx-1" @click="edit(todo)" />
+                    <u-button variant="subtle" icon="i-mdi-delete" color="error"
+                              class="mx-1" @click="todo.$delete()" />
                   </div>
-                </template>
-                <u-skeleton v-if="loading" />
-                <p v-else>{{ todo.description }}</p>
-              </u-card>
+                </div>
+              </template>
+              <u-skeleton v-if="loading" />
+              <p v-else>{{ todo.description }}</p>
+            </u-card>
           </u-page-list>
         </div>
       </u-card>
