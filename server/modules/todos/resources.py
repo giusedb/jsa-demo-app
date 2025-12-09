@@ -7,5 +7,6 @@ class TodoResource(DBResource):
         super().__init__(
             model=Todo,
             name='Todo',
-            resource_manager=resource_manager
+            resource_manager=resource_manager,
+            rpp=100,
         )
