@@ -1,5 +1,6 @@
 <script lang="ts">
 import {defineComponent} from 'vue'
+import { RSet } from "jsalchemy"
 
 let recSet = null;
 
@@ -7,17 +8,17 @@ async function cippa() {
   const titles = ['Bravo', 'Foxthrot', 'Alfa', 'Romeo', 'Mike', 'Charlie', 'Stan', 'Vodka', 'Rhum', 'Hotel'];
   const descriptions = ['D2', 'D5', 'D9', 'D4', 'D3', 'D6', 'D1', 'D8', 'D9', 'DA'];
 
-  const Model = await orm.getModel('Todo');
+  const Resource = await orm.getModel('Todo');
 
   _(titles).zip(descriptions).forEach(async ([title, description]) => {
-    const item = new Model({ title, description});
+    const item = new Resource({ title, description});
     console.log(await item.$save());
   });
 }
 global.cippa = cippa;
 
 global.destroy = async () => {
-  const recSet = new RecordSet(orm.resources, 'Todo', {}, { rpp: 200 });
+  const recSet = new RSet(orm.resources, 'Todo', {}, { rpp: 200 });
   recSet.on('records', (recs, total) => {
     orm.delete(...recs);
   });
@@ -68,7 +69,7 @@ export default defineComponent({
     }
   },
   mounted() {
-    recSet = new RecordSet(this.orm.resources, 'Todo', {}, { rpp: 3, sort: ['title']});
+    recSet = new RSet(this.orm.resources, 'Todo', {}, { rpp: 3, sort: ['title']});
     this.recSet = recSet;
     recSet.on('records', (recs, total) => {
       this.records.length = 0;
