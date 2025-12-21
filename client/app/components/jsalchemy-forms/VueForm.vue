@@ -8,7 +8,6 @@ export default {
   components: {JsonTable},
   props: {
     modelValue: { type: Object },
-    model: { type: String, mandatory: true },
     new: { type: Boolean, default: false },
     layout: { type: String, default: 'Default' },
     readOnly: { type: Boolean, default: false },

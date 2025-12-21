@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { inject } from 'vue';
 
-const orm = inject('orm');
+const orm: Orm = inject('orm');
 
 const componentsMenu = [
   {label: 'Todos', href: '/todos', icon: 'i-mdi-format-list-checks'},
+  {label: 'Cars', href: '/cars', icon: 'i-mdi-car'},
   {label: 'Playground', href: '/test', icon: 'i-material-symbols-playground-2-outline-rounded'}
 ]
 
 const identifiedMenu = [
-  {label: 'Profile', href: '/profile', icon: 'i-mdi-account'},
+  {label: 'Profile', action: () => orm.logout() , icon: 'i-mdi-account'},
   {label: 'Logout', icon: 'i-mdi-logout', onClick: () => orm.logout()},
 ]
 
