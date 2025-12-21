@@ -1,7 +1,7 @@
 <script lang="ts">
 import {defineComponent} from 'vue'
-import { _ } from "lodash";
 import VueForm from "./VueForm.vue";
+import _ from 'lodash';
 
 const referenceTypes = {
   one: 'Reference',

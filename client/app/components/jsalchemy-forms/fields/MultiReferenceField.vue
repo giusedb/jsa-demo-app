@@ -1,7 +1,7 @@
 <script lang="ts">
 import {defineComponent} from 'vue'
 import WidgetBase from "@/jsalchemy-forms/fields/WidgetBase.vue";
-import {_} from "lodash";
+import _ from "lodash";
 import JsonTable from "~/components/JsonTable.vue";
 
 export default defineComponent({

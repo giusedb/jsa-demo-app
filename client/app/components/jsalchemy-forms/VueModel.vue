@@ -1,9 +1,9 @@
 <script>
-import { _ } from 'lodash'
 
 import StringField from "@/jsalchemy-forms/fields/StringField.vue";
 import {defineAsyncComponent} from "vue";
 import JsonTable from "~/components/JsonTable.vue";
+import _ from 'lodash';
 
 export default {
   components: {JsonTable},

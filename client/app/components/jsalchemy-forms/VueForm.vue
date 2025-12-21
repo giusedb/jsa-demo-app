@@ -1,8 +1,8 @@
 <script>
-import { _ } from 'lodash'
 import JsonTable from "../JsonTable.vue";
 import StringField from "./fields/StringField.vue";
 import {defineAsyncComponent} from "vue";
+import _ from 'lodash'
 
 export default {
   components: {JsonTable},

@@ -1,7 +1,6 @@
 <script>
 
 import JsonTable from "~/components/JsonTable.vue";
-import { _ } from 'lodash';
 
 export default {
   name: "DefaultLayout",

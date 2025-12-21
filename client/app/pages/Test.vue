@@ -1,6 +1,7 @@
 <script lang="ts">
 import {defineComponent} from 'vue'
 import { RSet } from "jsalchemy"
+import _ from 'lodash'
 
 let recSet = null;
 
