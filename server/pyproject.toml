@@ -1,55 +1,74 @@
-[tool.poetry]
+[project]
 name = "jsa-demo-app"
 version = "0.0.1"
 description = "This application showcases the main features of JSAlchemy"
-authors = ["Giuseppe Di Bona <giusedb@gmail.com>"]
+authors = [{ name = "Giuseppe Di Bona", email = "giusedb@gmail.com" }]
+requires-python = ">=3.11,<4"
 readme = "README.md"
-package-mode = false
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "sqlalchemy-js-authentication>=0.1.0,<0.2",
+    "sqlalchemy-js-api>=0.1.0,<0.2",
+    "sqlalchemy-js-authorization>=0.1.0,<0.2",
+    "click>=8.1.7,<9",
+    "pytest>=8.3.3,<9",
+    "fastapi>=0.115.5,<0.116",
+    "uvicorn>=0.32.1,<0.33",
+    "alembic>=1.14.0,<2",
+    "sqlalchemy[asyncio]>=2.0.36,<3",
+    "pyyaml>=6.0.2,<7",
+    "aiosqlite>=0.20.0,<0.21",
+    "trio>=0.27.0,<0.28",
+    "asyncpg>=0.30.0,<0.31",
+    "aiohttp>=3.11.11,<4",
+    "pytest-mock>=3.14.0,<4",
+    "blacksheep[full]>=2.0.8,<3",
+    "pluralizer>=1.2.0,<2",
+    "psycopg2>=2.9.10,<3",
+    "psycopg2-binary>=2.9.10,<3",
+    "orjson>=3.11.1,<4",
+    "fakeredis>=2.32.0,<3",
+    "aiofile>=3.9.0,<4",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-sqlalchemy-js-authentication = "^0.1.0"
-sqlalchemy-js-api = "^0.1.0"
-sqlalchemy-js-authorization = "^0.1.0"
-click = "^8.1.7"
-pytest = "^8.3.3"
-fastapi = "^0.115.5"
-uvicorn = "^0.32.1"
-alembic = "^1.14.0"
-sqlalchemy = {extras = ["asyncio"], version = "^2.0.36"}
-pyyaml = "^6.0.2"
-aiosqlite = "^0.20.0"
-trio = "^0.27.0"
-asyncpg = "^0.30.0"
-aiohttp = "^3.11.11"
-pytest-mock = "^3.14.0"
-blacksheep = {extras = ["full"], version = "^2.0.8"}
-pluralizer = "^1.2.0"
-psycopg2 = "^2.9.10"
-psycopg2-binary = "^2.9.10"
-orjson = "^3.11.1"
-fakeredis = "^2.32.0"
-aiofile = "^3.9.0"
+[dependency-groups]
+local = [
+    "sqlalchemy-js-authentication",
+    "sqlalchemy-js-authorization",
+    "sqlalchemy-js-api",
+    "sqlalchemy-js-web-context",
+]
+dev = [
+    "ipython>=8.20.0,<9",
+    "pylint>=3.3.1,<4",
+    "requests>=2.32.3,<3",
+    "python-lsp-server[all]>=1.12.0,<2",
+]
+perhaps = ["wrapt>=1.17.1,<2"]
 
-[tool.poetry.group.local.dependencies]
-sqlalchemy-js-authentication = { path = "../libs/jsa-authentication", develop = true }
-sqlalchemy-js-authorization = { path = "../libs/jsa-authorization", develop = true }
-sqlalchemy-js-api = { path = "../libs/jsa-api", develop = true }
-sqlalchemy-js-web-context = { path = "../libs/jsa-context", develop = true }
+[tool.uv]
+package = false
+default-groups = [
+    "local",
+    "dev",
+    "perhaps",
+]
 
-[tool.poetry.group.dev.dependencies]
-ipython = "^8.20.0"
-pylint = "^3.3.1"
-requests = "^2.32.3"
-python-lsp-server = {extras = ["all"], version = "^1.12.0"}
-
-
-[tool.poetry.group.perhaps.dependencies]
-wrapt = "^1.17.1"
+[tool.uv.sources]
+sqlalchemy-js-authentication = { path = "../libs/jsa-authentication", editable = true }
+sqlalchemy-js-authorization = { path = "../libs/jsa-authorization", editable = true }
+sqlalchemy-js-api = { path = "../libs/jsa-api", editable = true }
+sqlalchemy-js-web-context = { path = "../libs/jsa-context", editable = true }
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.9.17,<0.10.0"]
+build-backend = "uv_build"
 
 [tool.poe.tasks]
 test = "pytest"
