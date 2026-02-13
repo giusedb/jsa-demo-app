@@ -38,7 +38,6 @@ export default {
       <UAlert v-if="form.firstSubmit && form.topError" color="danger" :description="form.topError" />
       <UForm>
         <UFormField v-for="field in form.fields" :key="field.name" :label="field.label || field.name">
-          {{ field }}
           <component :is="form.widgets[field.name]"
                      v-model="form.val[field.name]"
                      :field="field"
@@ -68,7 +67,9 @@ export default {
   </UCard>
   <div class="card" v-if="false">
     <div class="card-header d-flex justify-content-between">
-      <h3><span>{{ form.title }}</span></h3>
+      <h3>
+        <span>{{ form.title }}</span>
+      </h3>
     </div>
     <div class="card-body">
       <div class="border-1 border-primary">
