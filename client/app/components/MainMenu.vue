@@ -2,11 +2,18 @@
 import { inject } from 'vue';
 
 const orm: Orm = inject('orm');
+const isLoggedIn = ref(false);
 
 const componentsMenu = [
   {label: 'Todos', href: '/todos', icon: 'i-mdi-format-list-checks'},
-  {label: 'Cars', href: '/cars', icon: 'i-mdi-car'},
-  {label: 'Playground', href: '/test', icon: 'i-material-symbols-playground-2-outline-rounded'}
+  {label: 'Invoices', icon: 'i-mdi-apple', children: [
+      { label: 'Providers', description: 'Manage the providers for this demo',
+        icon: 'i-ion-business-sharp', href: '/invoices/providers'},
+      { label: 'Invoices', description: 'Manage all invoices regardless of the providers',
+       icon: 'i-ion-invoice-arrow-left', href: '/invoices/invoices'}
+    ]},
+  {label: 'Playground', href: '/test', icon: 'i-material-symbols-playground-2-outline-rounded'},
+  { label: 'Tests', href: '/tests', icon: 'i-icon-park-outline-experiment'}
 ]
 
 const identifiedMenu = [
@@ -36,8 +43,8 @@ const mainMenu = computed(() => {
 });
 
 onMounted(() => {
-  const requireLogin = componentsMenu.map(x => x.href)
-  if (!orm.user && requireLogin.includes(window.location.pathname)) {
+  const requireLogin = componentsMenu.map(x => x.href).includes(window.location.pathname);
+  if (!orm.user && requireLogin) {
     navigateTo('/login');
   }
 })
