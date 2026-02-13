@@ -84,7 +84,7 @@ def init(password):
     print(" -> Connecting to DB ...")
     engine, _ = get_engine(conf['db'])
     print(" -> Creating tables to DB ...")
-    res_man = setup_application(get_config())
+    res_man = setup_application(conf, init_db=True)
 
     async def init_db():
         async with res_man.context.session_maker().bind.begin() as conn:
