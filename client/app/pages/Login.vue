@@ -26,7 +26,7 @@ const submit = async (evt: FormSubmitEvent<Schema>) => {
     if (result.error) {
       view.error = result.error;
     } else {
-      navigateTo('/todos');
+      navigateTo('/tests');
     }
   } catch (e) {
     console.error(e);

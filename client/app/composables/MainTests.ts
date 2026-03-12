@@ -1,18 +1,70 @@
+import {record} from "#nuxt-scripts/validation/mock";
+import Toucher from "../../../libs/jsa-client/jsalchemy/ts/Toucher";
+import type {IOrmOptions, IResource} from "../../../libs/jsa-client/jsalchemy/ts/interfaces";
+import Orm from "../../../libs/jsa-client/jsalchemy/ts/Orm";
+import Collection from "../../../libs/jsa-client/jsalchemy/ts/Collection";
+import RSet from "../../../libs/jsa-client/jsalchemy/ts/RSet";
+import _ from 'lodash';
 
 export interface ITest {
     func: Function,
     id: string,
     status: string,
-    error?:string,
+    error?: string,
+}
+
+function sleep(ms: number): Promise<null> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const ormOptions: IOrmOptions = {
+  endpoint: '/jsalchemy',
+  autologin: true,
+  keepSession: 3600,
+  // ws: {
+  //   host: 'localhost',
+  //   port: 7998,
+  //   channel: 'js-router'
+  // }
+}
+
+window.ormOptions = ormOptions;
+
+class TestInstance implements IResource {
+    $pk: string
+    $row: Object
+    $raw: Object
+    $dirty: boolean
+    $attributeTypes: Object
+    // $collection: Collection
+    [key: string]: any
+
+    constructor(ob: object | any) {
+        this.$row = ob;
+        this.$raw = ob;
+        this.$dirty = false
+        this.name = ob.name || 'No Name';
+        this.$pk = ob.$pk || '';
+        this.score = ob.score || 0.1;
+        this.$attributeTypes = [];
+    }
 }
 
 const fixtures = {
-    zeroProviders(orm: Orm)  {
-        
+    async alones(numItems: number = 300): Promise<Orm> {
+        let orm = new Orm(ormOptions);
+        const Alone = await orm.getModel('Alone');
+        await Alone.deleteAll();
+        const alones = [];
+        for (let i = 0; i < numItems; i ++) {
+            alones.push(new Alone({name: `Alone ${i % 10}`, score: i * 0.5, date: new Date()}));
+        }
+        await orm.saveBulk(alones);
+        return window.orm = new Orm(ormOptions);
     }
-};
+}
 
-export class MainTests  {
+class MainTests  {
     list: Array<ITest>
 
     constructor() {
@@ -27,7 +79,20 @@ export class MainTests  {
             })
     }
 
+    async testBasicCollectionCrud(): Promise<string> {
+        let coll: Collection;
+        coll = new Collection(null, new Toucher(), TestInstance);
+        coll.add(new TestInstance({$pk: '1', name: 'foo'}))
+        coll.add(new TestInstance({$pk: '2', name: 'bar'}))
+
+        const item = coll.get('2', '1', '4');
+        if (!item) return 'Item not returned'
+        if (item.length !== 3) return '3 items requested, got ' + item.join(', ');
+        if (!item[0]) return 'Empty result'
+        if (item[0].name !== 'bar') return 'Item name is not the stored one'
+    }
     async testObjectIdentity() {
+        const orm = new Orm(ormOptions);
         const Alone = await orm.getModel('Alone')
         const alone = new Alone({name: 'A'})
         const saved = await alone.$save()
@@ -51,7 +116,7 @@ export class MainTests  {
         if (saved.name !== 'Foo') {
             return 'Saved and returned are not the same object';
         }
-        const b = orm.resources.getCollection('Alone').get(alone.$pk);
+        const b = orm.resources.getCollection('Alone').get(alone.$pk)[0];
         if (b.name !== alone.name) {
             return 'The saved object generates a new instance';
         }
@@ -60,6 +125,7 @@ export class MainTests  {
         }
     }
     async testAloneCRUD() {
+        const orm = new Orm(ormOptions);
         const Alone = await orm.getModel('Alone')
         await Alone.deleteAll()
         const alone = new Alone({name: 'B'})
@@ -75,11 +141,13 @@ export class MainTests  {
             return 'Item not updated'
         }
         await got.$delete();
-        if (await orm.get('Alone', 1)) {
+        const item = await orm.get('Alone', 1);
+        if (item) {
             return 'Delete didnt work';
         }
     }
     async testOneAndMoreGet() {
+        const orm = new Orm(ormOptions);
         const Alone = await orm.getModel('Alone')
         await Alone.deleteAll()
         await (new Alone({name: 'Test', score: 20})).$save();
@@ -93,16 +161,190 @@ export class MainTests  {
             return 'Array of ids didnt return an array of objects';
         }
     }
+    async testManyToOne() {
+        const orm = window.orm = new Orm(ormOptions);
+        const Master = await orm.getModel('Master')
+        const Detail = await orm.getModel('Detail')
+        await Master.deleteAll()
+        await Detail.deleteAll()
 
-    async testRSetBasic() {
-        const Alone = await orm.getModel('Alone')
-        await Alone.deleteAll()
-        await (new Alone({name: 'Test', score: 20})).$save();
-        await (new Alone({name: 'Test 2', score: 20})).$save();
-
-        const items = await orm.query('Alone', {name: 'Test'})
-        if (items.constructor.name !== 'RSet') {
-            return 'Query didnt return am RSet';
+        const master = new Master({name: 'A', score: 2.3, description: 'The first Master item'});
+        await master.$save();
+        let detail = new Detail({name: 'A1', score: 3.2, description: 'A 1 child', master_id: master.id});
+        await detail.$save();
+        detail = new Detail({name: 'A1', score: 3.2, description: 'A 1 child', master_id: master.id});
+        await detail.$save();
+        const orm2 = new Orm(ormOptions);
+        const dd = await orm2.get('Detail', 1);
+        console.log(dd.master)
+        let result: IResource
+        for (let i = 0; i < 10; i ++) {
+            await sleep(100);
+            result = dd.master
+            if (result)
+                break
         }
+        if (!result)
+            return 'No master found';
+        if (result.$pk !== dd.master_id)
+            return "It's not the right master"
+        if (!result.name.startsWith('A'))
+            return 'This master does not belong to the detail'
+        console.log(result.details);
+    }
+    async testRSet() {
+        const orm = new Orm(ormOptions);
+        const Master = await orm.getModel('Master');
+        const rset = new RSet(orm.resources, 'Master', {name: ['A']});
+        console.log(rset.items);
+        await sleep(100);
+        console.log(rset.items)
+        await sleep(100);
+        console.log(rset.items)
+        const items = rset.items;
+        if (!items)
+            return "rset didn't return items";
+        if (!Array.isArray(items))
+            return "Item returned by the RSet is not array";
+        if (items[0].constructor !== Master)
+            return "The RSet items didn't return array of Master";
+    }
+    async testMassiveCRUD() {
+        const orm = new Orm(ormOptions);
+        const Alone = await orm.getModel('Alone');
+        await Alone.deleteAll();
+        const alones = [];
+        const numItems = 300;
+        for (let i = 0; i < numItems; i ++) {
+            alones.push(new Alone({name: `Alone ${i}`, score: i}));
+        }
+        const saved = await orm.saveBulk(alones);
+        if (!saved)
+            return "`saveBulk` didn't rerturn"
+        if (saved.length !== numItems)
+            return "`saveBulk` returned less items"
+        const items = await orm.get('Alone', [2, 4, 6])
+        if (!items)
+            return 'No items returned'
+        if (!Array.isArray(items))
+            return 'The `orm.get` didnt return an array'
+        if (items.length !== 3)
+            return "The `orm.get` didn't return the exact number of items"
+        if (!items.every(x => x && (x.constructor === Alone)))
+            return "The `orm.get` didn't return the correct class items"
+        const alone = await Alone.get(saved[3].$pk)
+        if (alone.name !== saved[3].name)
+            return "The one got is not the one set"
+        const mixed = [];
+        for (let i = Math.floor(numItems / 2); i < numItems; i ++) {
+            saved[i].name += ' --- updated';
+            mixed.push(saved[i]);
+        }
+        for (let i = 0; i < Math.floor(numItems / 2); i ++) {
+            mixed.push(new Alone({name: `New Alone ${i + 1000}`}))
+        }
+        const reSaved = await orm.saveBulk(mixed)
+        if (reSaved.filter(x => x.name.endsWith('updated')).length !== Math.floor(numItems / 2))
+            return "not all got saved"
+        if (saved[1].name.endsWith('updated'))
+            return "Same instance violation"
+        if (!saved[Math.floor(numItems / 2)].name.endsWith('updated'))
+            return "Same instance violation"
+        const deleted = await orm.delete(...saved)
+        console.log(deleted)
+        await Alone.deleteAll();
+    }
+    async testPagerSync() {
+        const numItems = 500;
+        const orm = await fixtures.alones(numItems);
+        const Alone = await orm.getModel('Alone')
+        const rset = new RSet(orm.resources, 'Alone', {}, ['id'], 21);
+        let page = await rset.fetch()
+        if (!page)
+            return "RSet didn't fetch"
+        if (!Array.isArray(page))
+            return "RSet didn't return an array"
+        if (page.length !== rset.rpp)
+            return "Not all items were fetched"
+        if (!page.every(x => x.id <= rset.rpp))
+            return "RSet non properly sorted"
+        for (let i = 1; i < (1 + Math.floor(numItems / rset.rpp)); i ++) {
+            rset.page = i;
+            page = await rset.setPage(i).fetch()
+            if (!page.every(x => (x.id > (rset.rpp * (rset.page - 1)) && (x.id <= (rset.rpp * rset.page)))))
+                return `Page ${i} is not fetched properly`
+        }
+        rset.page ++;
+        page = await rset.fetch()
+        if (page.length >= rset.rpp)
+            return "Last page is longer than it should"
+        await Alone.deleteAll()
+    }
+    async testPagerASync() {
+        const numItems = 300
+        const orm = await fixtures.alones(numItems);
+        const Alone = await orm.getModel('Alone')
+        const rset = new RSet(orm.resources, 'Alone', {}, ['id'], 21);
+        let page = rset.items
+        await sleep(100);
+        page = rset.items
+        await sleep(100);
+        page = rset.items
+        await sleep(100);
+        page = rset.items
+        if (!page)
+            return "RSet didn't fetch"
+        if (!Array.isArray(page))
+            return "RSet didn't return an array"
+        if (page.length !== rset.rpp)
+            return "Not all items were fetched"
+        if (!page.every(x => x.id <= rset.rpp))
+            return "RSet non properly sorted"
+        for (let i = 1; i < (1 + Math.floor(numItems / rset.rpp)); i ++) {
+            rset.page = i;
+            page = rset.setPage(i).items;
+            await sleep(100);
+            page = rset.setPage(i).items;
+            if (!page.every(x => (x.id > (rset.rpp * (rset.page - 1)) && (x.id <= (rset.rpp * rset.page)))))
+                return `Page ${i} is not fetched properly`
+        }
+        rset.page ++;
+        page = rset.items;
+        await sleep(100);
+        page = rset.items;
+        if (page.length >= rset.rpp)
+            return "Last page is longer than it should"
+        await Alone.deleteAll()
+    }
+
+    async testPagerHydratation() {
+        const orm = await fixtures.alones(300);
+        const Alone = await orm.getModel('Alone');
+        const rset = new RSet((await orm).resources, 'Alone', {score: [2]});
+        let page = await rset.fetch();
+        console.log(page);
+        const score2 = page ? page.length : 0;
+        const saved = await orm.saveBulk(
+            [..._.range(10).map(x => new Alone({name: 'cippa', score: 2, id: x + 1})),
+                ..._.range(10).map(x => new Alone({name: 'cippa', score: 3, id: x + 40}))]);
+        page = await rset.fetch();
+        console.log(page)
+        if (page.length !== 10)
+            return "I'm expecting 10 record on the page. Filter didn't work thus I got " + page.length
+    }
+    async testRSetInsert1() {
+        const orm = await fixtures.alones(260);
+        const rset = new RSet(orm.resources, 'Alone', {name: 'Alone 4'})
+        let page = await rset.setRpp(5).setPage(1).fetch()
+        let scores = page.map(x => x.score);
+        if (![2, 7, 12, 17, 22].every(x => scores.includes(x)))
+            return 'Incorrect score'
+        page = await rset.setSort(['~score']).fetch()
+        scores = page.map(x => x.score)
+        console.log(scores)
+        if (![127, 122, 117, 112, 107].every(x => scores.includes(x)))
+            return 'Incorect page sorting';
     }
 }
+
+export default MainTests

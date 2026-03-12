@@ -48,9 +48,10 @@ class AloneResource(DBResource):
 
 
 
-class MasterResource(DBResource):
+class MasterResource(Deletable, DBResource):
 
     def __init__(self, rm):
+        Deletable.__init__(self)
         super().__init__(rm, 'Master', model=Master)
 
     def non_verb(self, a, b):

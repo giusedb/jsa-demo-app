@@ -2,7 +2,7 @@ from datetime import date
 from operator import index
 from typing import List
 
-from sqlalchemy import ForeignKey, Integer, JSON
+from sqlalchemy import ForeignKey, Integer, JSON, Float, Date
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.testing.schema import mapped_column, Table, Column
@@ -20,21 +20,24 @@ class NamedMixin:
 class Alone(NamedMixin, BaseModel):
 
     __tablename__ = 'alone'
-    score = Mapped[float]
-    date = Mapped[date]
+    score: Mapped[float] = mapped_column(Float, nullable=True)
+    date: Mapped[date] = mapped_column(Date, nullable=True)
 
 class Master(NamedMixin, BaseModel):
     __tablename__ = 'master'
 
     score: Mapped[int]
-    description: Mapped[str]
+    description: Mapped[str] = mapped_column(nullable=True)
 
 
 class Detail(NamedMixin, BaseModel):
 
     __tablename__ = 'detail'
     score: Mapped[int]
-    description: Mapped[str]
+    description: Mapped[str] = mapped_column(nullable=True)
+    master_id: Mapped[int] = mapped_column(ForeignKey(Master.id))
+
+    master: Mapped[Master] = relationship(Master, backref='details')
 
 class Node(NamedMixin, BaseModel):
     __tablename__ = 'node'

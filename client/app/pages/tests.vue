@@ -14,6 +14,8 @@ export default defineComponent({
   methods: {
     async runTest(id: string) {
       const test: ITest = this.idxTests[id];
+      test.status = 'Not started 🫥';
+      test.error = '';
       try {
         let result = test.func();
         if (result.constructor === Promise) {
@@ -22,7 +24,7 @@ export default defineComponent({
         if (result) {
           test.status = '❌ Fail';
           if (result.constructor === String) {
-            test.error = result;
+            test.error = String(result);
           } else {
             test.error = JSON.stringify(result)
           }
@@ -32,12 +34,16 @@ export default defineComponent({
       } catch (e) {
         test.status = '⚡️ Error';
         test.error = e.message || ('' + e);
+        console.error(e);
       }
     },
-    runAll() {
+    async runAll() {
       for (let test of this.tests.list) {
-        this.runTest(test.id);
-        setTimeout(() => {});
+        test.status = 'Not started 🫥';
+        test.error = '';
+      }
+      for (let test of this.tests.list) {
+        await this.runTest(test.id);
       }
     }
   }
