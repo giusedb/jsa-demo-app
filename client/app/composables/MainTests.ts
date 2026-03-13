@@ -316,7 +316,6 @@ class MainTests  {
             return "Last page is longer than it should"
         await Alone.deleteAll()
     }
-
     async testPagerHydratation() {
         const orm = await fixtures.alones(300);
         const Alone = await orm.getModel('Alone');
@@ -344,6 +343,17 @@ class MainTests  {
         console.log(scores)
         if (![127, 122, 117, 112, 107].every(x => scores.includes(x)))
             return 'Incorect page sorting';
+    }
+    async testExternalHydratation() {
+        const orm = await fixtures.alones(300);
+        const rset = await orm.query('Alone', {score: [4]}, ['name'])
+        const items = rset.items
+        for (let x = 0;x < 10; x ++) {
+            if (items.length === 0)
+                await sleep(50)
+        }
+        if (items.length === 0)
+            return 'Records where not propagated externally';
     }
 }
 
