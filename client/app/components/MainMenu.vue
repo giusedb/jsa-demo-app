@@ -5,8 +5,11 @@ const orm: Orm = inject('orm');
 const isLoggedIn = ref(false);
 
 const componentsMenu = [
-  { label: 'Tests', href: '/tests', icon: 'i-icon-park-outline-experiment'}
-  // {label: 'Todos', href: '/todos', icon: 'i-mdi-format-list-checks'},
+  { label: 'Tests', href: '/tests', icon: 'i-icon-park-outline-experiment'},
+  { label: 'Todos', children: [
+    { label: 'Basic', href: '/todoBasic', icon: 'i-mdi-format-list-checks'},
+    { label: 'With form', href: '/todos', icon: 'i-mdi-format-list-checks'},
+    ]}
   // {label: 'Invoices', icon: 'i-mdi-apple', children: [
   //     { label: 'Providers', description: 'Manage the providers for this demo',
   //       icon: 'i-ion-business-sharp', href: '/invoices/providers'},
