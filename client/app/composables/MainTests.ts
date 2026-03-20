@@ -17,6 +17,35 @@ function sleep(ms: number): Promise<null> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function arrayEqual(a1: string[], a2: string[]): boolean {
+    if (a1.length !== a2.length)
+        return false
+    for (let i = 0; i < a1.length; i ++) {
+        if (a1[i] !== a2[i])
+            return false;
+    }
+    return true
+}
+
+function objectEqual(o1: Object, o2: Object): boolean {
+    let keys = Object.keys(o1);
+    if (Object.keys(o2).length !== keys.length)
+        return false
+    for (let key of keys) {
+        if (o1[key] !== o2[key])
+            return false
+    }
+    return true
+}
+
+function range(_from: number = 0, to: number = 0) {
+    if (to === 0) {
+        to = _from
+        _from = 0;
+    }
+    return Array.from({length: to - _from}, (_, i) => _from + i)
+}
+
 const ormOptions: IOrmOptions = {
   endpoint: '/jsalchemy',
   autologin: true,
@@ -192,6 +221,25 @@ class MainTests  {
             return 'This master does not belong to the detail'
         console.log(result.details);
     }
+    async testPager() {
+        const orm = await fixtures.alones(10);
+        const Alone = await orm.getModel('Alone');
+        const pagerNF = orm.resources.getCollection('Alone')
+            .getPager({});
+        pagerNF.get(0, 10);
+        await sleep(100);
+        let pks = pagerNF.get(5, 10);
+        console.log('Add 1 item via $save');
+        const alone = new Alone({name: 'alone 11', score: 11, description: 'The first alone item'});
+        const alones = await orm.get('Alone', range(11));
+        await alone.$save();
+        while (pagerNF.newBasket.length === 0)
+            await sleep(50);
+        let newPks = pagerNF.get(5, 10);
+        if (!arrayEqual(pks, newPks))
+            return 'Change done ahead of time';
+        console.log(pagerNF.get(5, 10));
+    }
     async testRSet() {
         const orm = new Orm(ormOptions);
         const Master = await orm.getModel('Master');
@@ -354,6 +402,13 @@ class MainTests  {
         }
         if (items.length === 0)
             return 'Records where not propagated externally';
+    }
+    async testCreateTodos() {
+        const Todo = await orm.getModel('Todo');
+        await orm.saveBulk(range(300).map(x => new Todo({
+            title: `Todo ${x + 1}`,
+            description: `Description ${x + 1}`,
+        })));
     }
 }
 
