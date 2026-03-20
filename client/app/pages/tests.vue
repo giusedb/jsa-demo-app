@@ -59,6 +59,8 @@ export default defineComponent({
                 @click="runAll"/>
     </div>
     <p>Below a list of tests to run against the functionalities</p>
+  </template>
+  <template #default>
     <u-page-list>
       <u-page-card v-for="test in tests.list" :key="test.id"
                    :title="test.id"
@@ -80,10 +82,10 @@ export default defineComponent({
         </div>
       </u-page-card>
     </u-page-list>
-  </template>
-  <u-page-list>
+    <u-page-list>
 
-  </u-page-list>
+    </u-page-list>
+  </template>
 </u-card>
 </template>
 
