@@ -6,5 +6,5 @@ from modules.base import BaseModel
 class Todo(BaseModel):
     __tablename__ = 'todos'
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(String(255), nullable=True)
     completed: Mapped[bool]= mapped_column(Boolean, default=False)
