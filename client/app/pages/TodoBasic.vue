@@ -25,7 +25,7 @@ export default defineComponent({
       const x = this.touch;
       try {
         return [...orm.resources.collections.Todo.pagers.get('').pagers.entries()
-            .map(([k, x]) => [k, x.pages.get(0).length])]
+            .map(([k, x]) => [k, x.pages.get(1).length])]
       } catch (e) {
         return []
       }
@@ -82,6 +82,9 @@ export default defineComponent({
       </div>
       <u-button label="submit" icon="i-mdi-plane" variant="subtle"
                 @click="add"/>
+      <div class="w-50">
+        <u-select v-model="rpp" :items="[5, 10, 15, 20]" variant="subtle" />
+      </div>
     </div>
     <record-set resource="Todo" :sort="selectedSort.sort" :records-per-page="rpp" :page="page">
       <template #default="{records, total }">
