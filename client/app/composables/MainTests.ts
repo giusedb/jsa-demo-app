@@ -5,6 +5,7 @@ import Orm from "../../../libs/jsa-client/jsalchemy/ts/Orm";
 import Collection from "../../../libs/jsa-client/jsalchemy/ts/Collection";
 import RSet from "../../../libs/jsa-client/jsalchemy/ts/RSet";
 import _ from 'lodash';
+import {Unplaced} from "../../../libs/jsa-client/jsalchemy/ts/Pager";
 
 export interface ITest {
     func: Function,
@@ -90,6 +91,15 @@ const fixtures = {
         }
         await orm.saveBulk(alones);
         return window.orm = new Orm(ormOptions);
+    },
+
+    async pager(): Promise<Pager> {
+        const orm = new Orm(ormOptions);
+        const pager: Pager = ((await orm.query('Alone', {}, ['score'])).pager)
+        const Alone = await orm.getModel('Alone');
+        Object.defineProperty(pager, 'missingPages', {value: []});
+        Object.defineProperty(pager, 'isComplete', {value: false})
+        return pager
     }
 }
 
@@ -108,6 +118,127 @@ class MainTests  {
             })
     }
 
+    async testRandomInsertSamePage() {
+        const pageStr = (x) => pager.pages.get(x).map(x => pkIndex.get(x)?.score).join(" ")
+        const pager = await fixtures.pager();
+        const [Alone, getPk, pkIndex] = [pager.collection.cls, pager.collection.cls.getPk, pager.collection.pkIndex];
+        const alones = Array.from({length: 50},
+            (_, i) => new Alone({name: `a${i}`, id: i, score: i, }))
+            .sort(pager.sortFunc)
+        alones.slice(0, 10).forEach(
+            t => pkIndex.set(t.id, t));
+        pager.pages.set(0, alones.map(getPk))
+        if (pageStr(0) !== '0 1 2 3 4 5 6 7 8 9                                        ')
+            return 'Page 0 is not correct'
+        pager.collection.bulkInsert(alones.slice(2, 10), true, {});
+        pager.placeUnplaced();
+        if (pageStr(0) !== '0 1 2 3 4 5 6 7 8 9                                        ')
+            return 'Page 0 is not correct after insert'
+        if (pager.unplacedItems.length !== 0)
+            return "It didn't realize that the item was already in the page"
+        pager.collection.bulkInsert(alones.slice(10, 12), true, {});
+        pager.placeUnplaced();
+        if (pageStr(0) !== '0 1 2 3 4 5 6 7 8 9 10 11                                      ')
+            return 'Error inserting after the first block'
+        pager.collection.bulkInsert([alones[33]], true, {});
+        pager.placeUnplaced();
+        if (pageStr(0) !== '0 1 2 3 4 5 6 7 8 9 10 11                      33                ')
+            return 'Error inserting after the second block'
+        pager.collection.bulkInsert([new Alone({name: 'ciao', score: 29.9, id: 100})], true, {});
+        pager.placeUnplaced();
+        if (pageStr(0) !== '0 1 2 3 4 5 6 7 8 9 10 11                      33                ')
+            return 'Error inserting after the second block'
+        if (pager.unplacedItems.length != 1)
+            return 'Unplaced passed through'
+        pager.collection.bulkInsert([alones[29], alones[30]], true, {});
+        pager.placeUnplaced();
+        if (pager.pages.get(0).length !== 51) return 'sure items were not placed.'
+        if (pager.unplacedItems.length !== 0) return 'Unplaced didn\'t get placed'
+        if (pageStr(0) !== '0 1 2 3 4 5 6 7 8 9 10 11                  29 29.9 30   33                ')
+            return 'known items placed in the wrong position';
+    }
+    async testRandomInsert2() {
+        const pageStr = (x) => pager.pages.get(x).map(x => pkIndex.get(x)?.score).join(" ")
+        const pager = await fixtures.pager();
+        const [Alone, getPk, pkIndex] = [pager.collection.cls, pager.collection.cls.getPk, pager.collection.pkIndex];
+        const alones = Array.from({length: 300},
+            (_, i) => new Alone({name: `a${i}`, id: i, score: i,}))
+            .sort(pager.sortFunc)
+        alones.slice(0, 300).forEach(
+            t => pkIndex.set(t.id, t));
+        pager.pages.set(0, alones.slice(0, pager.rpp).map(getPk))
+        pager.pages.set(1, alones.slice(pager.rpp, 2 * pager.rpp).map(getPk))
+        console.log('Setup full first page');
+        pager.collection.bulkInsert([new Alone({name: 'ciao', score: 29.9, id: 400})], true, {});
+        pager.placeUnplaced();
+        if (pager.pages.get(0)?.length !== 200) return "Didn't make the page shift"
+        if (pager.pages.get(1)?.length !== 101) return "Page-shift unsucessful"
+        if (pager.unplacedItems.length > 0) return "Some item got stuck in unplaced"
+        if (pageStr(0) !== '0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 29.9 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198')
+            return 'Page 0 is not correct after insert'
+        if (pageStr(1) !== '199 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 218 219 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255 256 257 258 259 260 261 262 263 264 265 266 267 268 269 270 271 272 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290 291 292 293 294 295 296 297 298 299')
+            return 'Page 1 is not correct'
+    }
+    async testRandomInsert2Pages() {
+        const pageStr = (x) => pager.pages.get(x).map(x => pkIndex.get(x)?.score).join(" ")
+        const pager = await fixtures.pager();
+        const [Alone, getPk, pkIndex] = [pager.collection.cls, pager.collection.cls.getPk, pager.collection.pkIndex];
+        const alones = Array.from({length: 300},
+            (_, i) => new Alone({name: `a${i}`, id: i, score: i,}))
+            .sort(pager.sortFunc)
+        alones.slice(0, 24).forEach(
+            t => pkIndex.set(t.id, t));
+        alones.slice(175, 224).forEach(
+            t => pkIndex.set(t.id, t));
+        pager.pages.set(0, alones.slice(0, pager.rpp).map(getPk))
+        pager.pages.set(1, alones.slice(pager.rpp, 2 * pager.rpp).map(getPk))
+        console.log('Setup full first page');
+        pager.collection.bulkInsert([new Alone({name: 'ciao', score: 29.9, id: 400})], true, {});
+        pager.placeUnplaced();
+        if (pager.pages.get(0)?.length !== 199) return "Didn't make the page shift"
+        if (pager.pages.get(1)?.length !== 101) return "Page-shift unsucessful"
+        if (pager.unplacedItems.length > 1) return "Some item got stuck in unplaced"
+        if (pager.unplacedItems.length < 1) return "Some item wa incorrectly placed"
+        console.log(pageStr(0))
+        if (pageStr(0) !== '0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23                                                                                                                                                        175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198')
+            return 'Page 0 is not correct after insert'
+        console.log(pageStr(1))
+        if (pageStr(1) !== '199 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 218 219 220 221 222 223                                                                            ')
+            return 'Page 1 is not correct'
+    }
+    async testRandomInsertPageSplit() {
+        const pageStr = (x) => pager.pages.get(x).map(x => pkIndex.get(x)?.score).join(" ")
+        const pager = await fixtures.pager();
+        const [Alone, getPk, pkIndex] = [pager.collection.cls, pager.collection.cls.getPk, pager.collection.pkIndex];
+        const alones = Array.from({length: 300},
+            (_, i) => new Alone({name: `a${i}`, id: i, score: i,}))
+            .sort(pager.sortFunc)
+        alones.slice(0, 24).forEach(
+            t => pkIndex.set(t.id, t));
+        alones.slice(220, 224).forEach(
+            t => pkIndex.set(t.id, t));
+        pager.pages.set(0, alones.slice(0, pager.rpp).map(getPk))
+        pager.pages.set(1, alones.slice(pager.rpp, 2 * pager.rpp).map(getPk))
+        console.log('Setup full first page');
+        pager.collection.bulkInsert([new Alone({name: 'ciao', score: 29.9, id: 400})], true, {});
+        pager.placeUnplaced();
+        if (pager.pages.get(0)?.length !== 200) return "Didn't make the page shift"
+        if (pager.pages.get(1)?.length !== 100) return "Page-shift unsucessful"
+        if (pager.unplacedItems.length > 1) return "Some item got stuck in unplaced"
+        if (pager.unplacedItems.length < 1) return "Some item wa incorrectly placed"
+        console.log(pageStr(0))
+        if (pageStr(0) !== '0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23                                                                                                                                                                                ')
+            return 'Page 0 is not correct after insert'
+        console.log(pageStr(1))
+        if (pageStr(1) !== '                    220 221 222 223                                                                            ')
+            return 'Page 1 is not correct'
+        pager.collection.bulkInsert([alones[200], alones[199]], true, {})
+        pager.placeUnplaced()
+        if (pager.pages.get(0)?.length !== 199) return "Didn't make the page shift"
+        if (pager.pages.get(1)?.length !== 101) return "Page-shift unsucessful"
+        if (pager.unplacedItems.length > 1) return "Some item got stuck in unplaced"
+        if (pager.unplacedItems.length < 1) return "Some item wa incorrectly placed"
+    }
     async testBasicCollectionCrud(): Promise<string> {
         let coll: Collection;
         coll = new Collection(null, new Toucher(), TestInstance);
@@ -410,6 +541,7 @@ class MainTests  {
             description: `Description ${x + 1}`,
         })));
     }
+
 }
 
 export default MainTests
