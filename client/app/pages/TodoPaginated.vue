@@ -4,12 +4,22 @@ export default defineComponent({
   components: { RecordSet },
   inject: ['orm'],
   data() {
+    const availableSort = [
+          { label: 'Title', sort: ['title'] },
+          { label: 'Title Desc', sort: ['~title'] },
+          { label: 'Id', sort: ['id'] },
+          { label: 'Id Desc', sort: ['~id'] },];
     return {
       todo: {
         title: '',
         description: '',
       },
+      rpp: 10,
+      page: 1,
+      selectedSort: availableSort[0],
+      availableSort,
       touch: 0,
+      availableRpp: [5, 10, 20, 30, 40, 50],
     }
   },
   methods: {
@@ -26,10 +36,10 @@ export default defineComponent({
 <template>
   <u-card class="w-full">
     <template #header>
-      <h2>Basic Todo App</h2>
+      <h2>Todo list with sorting and pagination</h2>
       <p>
-        This is a very simple todo app. It's only porpuse is to showcase the simplicity of managing a list in JSAlchemy
-        together with a minimal interaction such as create and delete Todos
+        In addition to the previous example this adds the ability Paginate the items and leave the user to chose his
+        page size
       </p>
     </template>
     <div class="w-full flex justify-between p-1">
@@ -39,15 +49,24 @@ export default defineComponent({
       </div>
       <u-button label="Add a Todo" icon="i-mdi-paper-plane" variant="outline" color="secondary"
                 @click="add"/>
+      <u-select v-model="rpp" :items="availableRpp" class="mx-2" />
     </div>
-    <record-set resource="Todo">
+    <record-set resource="Todo" :sort="selectedSort.sort" :records-per-page="rpp" v-model:page="page">
       <template #default="{records, total }">
         <u-card class="p-2">
           <template #header>
             <div class="flex w-full justify-between">
               <h5>Items: {{ total }}</h5>
               <u-pagination v-if="total > rpp" :total="total"
-                            v-model:page="page" :sibling-count="2" :items-per-page="rpp"/>
+                            v-model:page="page" :sibling-count="2"
+                            :items-per-page="rpp"/>
+              <UFieldGroup class="cursor-pointer">
+                <u-badge v-for="sort in availableSort"
+                         :variant="selectedSort === sort ? 'solid' : 'subtle'"
+                         @click="selectedSort = sort">
+                  {{ sort.label }}
+                </u-badge>
+              </UFieldGroup>
             </div>
           </template>
           <ul>

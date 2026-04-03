@@ -8,8 +8,11 @@ const componentsMenu = [
   { label: 'Tests', href: '/tests', icon: 'i-icon-park-outline-experiment'},
   { label: 'Todos', children: [
     { label: 'Basic', href: '/todoBasic', icon: 'i-mdi-format-list-checks'},
-    { label: 'With form', href: '/todos', icon: 'i-mdi-format-list-checks'},
-    ]}
+    { label: 'Sorted', href: '/todoSorted', icon: 'tdesign-order-descending'},
+    { label: 'Paginated', href: '/todoPaginated', icon: 'lineicons:pagination'},
+    { label: 'Multi fields', href: '/todoForm', icon: 'material-symbols-format-align-center-rounded'},
+    { label: 'Filtered', href: '/todoFiltered', icon: 'material-symbols-filter-alt-sharp'},
+  ]}
   // {label: 'Invoices', icon: 'i-mdi-apple', children: [
   //     { label: 'Providers', description: 'Manage the providers for this demo',
   //       icon: 'i-ion-business-sharp', href: '/invoices/providers'},
@@ -46,7 +49,16 @@ const mainMenu = computed(() => {
 });
 
 onMounted(() => {
-  const requireLogin = componentsMenu.map(x => x.href).includes(window.location.pathname);
+  const loginRequired = [];
+  for (const item of componentsMenu) {
+    if (item.children) {
+      for (const child of item.children) {
+        loginRequired.push(child.href);
+      }
+    }
+    loginRequired.push(item.href)
+  }
+  const requireLogin = loginRequired.includes(window.location.pathname);
   if (!orm.user && requireLogin) {
     navigateTo('/login');
   }

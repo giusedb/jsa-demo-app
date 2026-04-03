@@ -4,11 +4,18 @@ export default defineComponent({
   components: { RecordSet },
   inject: ['orm'],
   data() {
+    const availableSort = [
+          { label: 'Title', sort: ['title'] },
+          { label: 'Title Desc', sort: ['~title'] },
+          { label: 'Id', sort: ['id'] },
+          { label: 'Id Desc', sort: ['~id'] },];
     return {
       todo: {
         title: '',
         description: '',
       },
+      selectedSort: availableSort[0],
+      availableSort,
       touch: 0,
     }
   },
@@ -26,10 +33,10 @@ export default defineComponent({
 <template>
   <u-card class="w-full">
     <template #header>
-      <h2>Basic Todo App</h2>
+      <h2>Todo list with sorting</h2>
       <p>
-        This is a very simple todo app. It's only porpuse is to showcase the simplicity of managing a list in JSAlchemy
-        together with a minimal interaction such as create and delete Todos
+        In addition to the previous example this adds the ability to sort the list of todos by title or id, either
+        ascending and discending
       </p>
     </template>
     <div class="w-full flex justify-between p-1">
@@ -40,7 +47,7 @@ export default defineComponent({
       <u-button label="Add a Todo" icon="i-mdi-paper-plane" variant="outline" color="secondary"
                 @click="add"/>
     </div>
-    <record-set resource="Todo">
+    <record-set resource="Todo" :sort="selectedSort.sort">
       <template #default="{records, total }">
         <u-card class="p-2">
           <template #header>
@@ -48,6 +55,13 @@ export default defineComponent({
               <h5>Items: {{ total }}</h5>
               <u-pagination v-if="total > rpp" :total="total"
                             v-model:page="page" :sibling-count="2" :items-per-page="rpp"/>
+              <UFieldGroup class="cursor-pointer">
+                <u-badge v-for="sort in availableSort"
+                         :variant="selectedSort === sort ? 'solid' : 'subtle'"
+                         @click="selectedSort = sort">
+                  {{ sort.label }}
+                </u-badge>
+              </UFieldGroup>
             </div>
           </template>
           <ul>
