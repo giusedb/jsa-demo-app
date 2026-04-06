@@ -12,9 +12,9 @@ export default defineComponent({
           { label: 'Id', sort: ['id'] },
           { label: 'Id Desc', sort: ['~id'] },];
     const availableFilters = [
+      { label: 'All', filter: {} },
       { label: 'Not Completed', filter: { completed: false } },
       { label: 'Completed', filter: { completed: true } },
-      { label: 'All', filter: {} },
     ];
     return {
       todo: {
@@ -85,7 +85,7 @@ export default defineComponent({
       <u-select v-model="rpp" :items="availableRpp" class="mx-2" />
     </div>
     <record-set resource="Todo" :sort="selectedSort.sort" :records-per-page="rpp" v-model:page="page" :filter="filter.filter">
-      <template #default="{records, total }">
+      <template #default="{records, total, loading }">
         <u-card class="p-2">
           <template #header>
             <div class="flex w-full justify-between">

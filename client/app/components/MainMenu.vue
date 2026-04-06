@@ -7,18 +7,23 @@ const isLoggedIn = ref(false);
 const componentsMenu = [
   { label: 'Tests', href: '/tests', icon: 'i-icon-park-outline-experiment'},
   { label: 'Todos', children: [
-    { label: 'Basic', href: '/todoBasic', icon: 'i-mdi-format-list-checks'},
-    { label: 'Sorted', href: '/todoSorted', icon: 'tdesign-order-descending'},
-    { label: 'Paginated', href: '/todoPaginated', icon: 'lineicons:pagination'},
-    { label: 'Multi fields', href: '/todoForm', icon: 'material-symbols-format-align-center-rounded'},
-    { label: 'Filtered', href: '/todoFiltered', icon: 'material-symbols-filter-alt-sharp'},
-  ]}
-  // {label: 'Invoices', icon: 'i-mdi-apple', children: [
-  //     { label: 'Providers', description: 'Manage the providers for this demo',
-  //       icon: 'i-ion-business-sharp', href: '/invoices/providers'},
-  //     { label: 'Invoices', description: 'Manage all invoices regardless of the providers',
-  //      icon: 'i-ion-invoice-arrow-left', href: '/invoices/invoices'}
-  //   ]},
+    { label: 'Basic', href: '/todoBasic', icon: 'i-mdi-format-list-checks',
+      description: 'Basic Todo screen'},
+    { label: 'Sorted', href: '/todoSorted', icon: 'tdesign-order-descending',
+      description: 'Sortable todo screen'},
+    { label: 'Paginated', href: '/todoPaginated', icon: 'lineicons:pagination',
+      description: 'Paginated todo screen with 10 items per page'},
+    { label: 'Multi fields', href: '/todoForm', icon: 'material-symbols-format-align-center-rounded',
+      description: 'Todo screen with multiple fields'},
+    { label: 'Filtered', href: '/todoFiltered', icon: 'material-symbols-filter-alt-sharp',
+      description: 'Fully functional Todo screen with filters sorting, pagination etc...'},
+  ]},
+  {label: 'Invoices', icon: 'i-mdi-apple', children: [
+      { label: 'Providers', description: 'Manage the providers for this demo',
+        icon: 'i-ion-business-sharp', href: '/invoices/providers'},
+      { label: 'Invoices', description: 'Manage all invoices regardless of the providers',
+       icon: 'i-ion-invoice-arrow-left', href: '/invoices'}
+    ]},
   // {label: 'Playground', href: '/test', icon: 'i-material-symbols-playground-2-outline-rounded'},
 ]
 
