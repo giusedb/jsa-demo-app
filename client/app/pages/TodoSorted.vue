@@ -16,6 +16,7 @@ export default defineComponent({
       },
       selectedSort: availableSort[0],
       availableSort,
+      rpp: 20,
       touch: 0,
     }
   },
@@ -53,8 +54,6 @@ export default defineComponent({
           <template #header>
             <div class="flex w-full justify-between">
               <h5>Items: {{ total }}</h5>
-              <u-pagination v-if="total > rpp" :total="total"
-                            v-model:page="page" :sibling-count="2" :items-per-page="rpp"/>
               <UFieldGroup class="cursor-pointer">
                 <u-badge v-for="sort in availableSort"
                          :variant="selectedSort === sort ? 'solid' : 'subtle'"

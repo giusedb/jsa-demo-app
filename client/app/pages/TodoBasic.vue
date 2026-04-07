@@ -46,8 +46,6 @@ export default defineComponent({
           <template #header>
             <div class="flex w-full justify-between">
               <h5>Items: {{ total }}</h5>
-              <u-pagination v-if="total > rpp" :total="total"
-                            v-model:page="page" :sibling-count="2" :items-per-page="rpp"/>
             </div>
           </template>
           <ul>
