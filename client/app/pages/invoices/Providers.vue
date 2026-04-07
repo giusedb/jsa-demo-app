@@ -26,7 +26,7 @@ export default defineComponent({
   methods: {
     async add() {
       const Provider = await this.orm.getModel('Provider');
-      const provider = new Provider(this.selected);
+      const provider = new Provider(Object.assign({}, this.selected));
       await provider.$save();
       this.selected = defaulItem();
     },
@@ -35,9 +35,11 @@ export default defineComponent({
     },
     update() {
       this.selected.$save();
+      this.selected = defaulItem();
     },
     deleteProvider() {
       this.selected.$delete();
+      this.selected = defaulItem();
     }
   }
 })

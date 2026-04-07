@@ -3,7 +3,7 @@ from sqlalchemy import delete
 from jsalchemy_api import DBResource, ResourceManager
 from jsalchemy_api.resources.base import verb
 from jsalchemy_web_context import db
-from .models import Provider
+from .models import Provider, Invoice
 
 
 class ProviderResouce(DBResource):
@@ -25,3 +25,8 @@ class ProviderResouce(DBResource):
     async def on_instance(self, instance, num: int):
         instance.total_amount += num
         return f'Cippa {num} volte'
+
+
+class InvoiceResource(DBResource):
+    def __init__(self, resource_manager: ResourceManager):
+        super().__init__(name='Invoice',model=Invoice, resource_manager=resource_manager)
