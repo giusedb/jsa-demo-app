@@ -30,3 +30,4 @@ client/AGENTS.md
 client/package-lock.json
 AGENTS.md
 server/uv.lock
+.aider*
