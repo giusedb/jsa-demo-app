@@ -1,6 +1,9 @@
 import { Orm } from 'jsalchemy';
+import { reactive } from "@vue/reactivity";
+import type {IOrmOptions} from "jsalchemy/jsalchemy/ts/interfaces";
+
 export const user = ref(null);
-const ormOptions = {
+const ormOptions: IOrmOptions = {
   endpoint: '/jsalchemy',
   autologin: true,
   keepSession: 3600,
@@ -8,7 +11,9 @@ const ormOptions = {
     host: 'localhost',
     port: 7998,
     channel: 'js-router'
-  }
+  },
+  uiFramework: 'vue',
+  reactiveFunc: ref,
 };
 
 const handlers = {
@@ -21,4 +26,4 @@ const handlers = {
         user.value = null;
     },
 };
-export const orm = new Orm(ormOptions, handlers, reactive);
+export const orm = new Orm(ormOptions, handlers);

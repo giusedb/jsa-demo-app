@@ -48,14 +48,16 @@ function range(_from: number = 0, to: number = 0) {
 }
 
 const ormOptions: IOrmOptions = {
-  endpoint: '/jsalchemy',
-  autologin: true,
-  keepSession: 3600,
-  // ws: {
-  //   host: 'localhost',
-  //   port: 7998,
-  //   channel: 'js-router'
-  // }
+    endpoint: '/jsalchemy',
+    autologin: true,
+    keepSession: 3600,
+    uiFramework: 'vue',
+    reactiveFunc: ref,
+    // ws: {
+    //   host: 'localhost',
+    //   port: 7998,
+    //   channel: 'js-router'
+    // }
 }
 
 window.ormOptions = ormOptions;
@@ -95,8 +97,8 @@ const fixtures = {
 
     async pager(): Promise<Pager> {
         const orm = new Orm(ormOptions);
-        const pager: Pager = ((await orm.query('Alone', {}, ['score'])).pager)
         const Alone = await orm.getModel('Alone');
+        const pager: Pager = await orm.resources.collections.Alone.getPager({}, ['score'])
         Object.defineProperty(pager, 'missingPages', {value: []});
         Object.defineProperty(pager, 'isComplete', {value: false})
         return pager
@@ -118,6 +120,28 @@ class MainTests  {
             })
     }
 
+    async testAsyncResource() {
+        const orm = await fixtures.alones(50);
+        const resMan = orm.resources;
+        const collection = await resMan.getAsyncCollection('Alone')
+        if (!collection.cls)
+            return 'The collection is not fully initialized';
+        let pks = [1,2,3]
+        let items = await collection.get(...pks);
+        if (!items.map(x => x.$pk).every(x => pks.includes(x)))
+            return 'Not all items got returned';
+        pks = [1,3,5,7]
+        let pks2 = [2, 3, 4, 6, 7, 8]
+        let res = await Promise.all([collection.get(...pks), collection.get(...pks2)])
+        console.log(res)
+        if (res.length !== 2)
+            return "Prmise.all() didn't work"
+        if (!res[0].map(x => x.$pk).every(x => pks.includes(x)))
+            return "Error on the first query of combined results"
+        if (!res[1].map(x => x.$pk).every(x => pks2.includes(x)))
+            return "Error on the second query of combined results"
+
+    }
     async testRandomInsertSamePage() {
         const pageStr = (x) => pager.pages.get(x).map(x => pkIndex.get(x)?.score).join(" ")
         const pager = await fixtures.pager();
@@ -241,11 +265,11 @@ class MainTests  {
     }
     async testBasicCollectionCrud(): Promise<string> {
         let coll: Collection;
-        coll = new Collection(null, new Toucher(), TestInstance);
+        coll = new Collection(orm.resources, new Toucher(), TestInstance);
         coll.add(new TestInstance({$pk: '1', name: 'foo'}))
         coll.add(new TestInstance({$pk: '2', name: 'bar'}))
 
-        const item = coll.get('2', '1', '4');
+        const item = await coll.get('2', '1', '4');
         if (!item) return 'Item not returned'
         if (item.length !== 3) return '3 items requested, got ' + item.join(', ');
         if (!item[0]) return 'Empty result'
@@ -276,7 +300,7 @@ class MainTests  {
         if (saved.name !== 'Foo') {
             return 'Saved and returned are not the same object';
         }
-        const b = orm.resources.getCollection('Alone').get(alone.$pk)[0];
+        const b = await orm.resources.getCollection('Alone').get(alone.$pk);
         if (b.name !== alone.name) {
             return 'The saved object generates a new instance';
         }
@@ -355,17 +379,21 @@ class MainTests  {
     async testPager() {
         const orm = await fixtures.alones(10);
         const Alone = await orm.getModel('Alone');
-        const pagerNF = orm.resources.getCollection('Alone')
-            .getPager({});
-        pagerNF.get(0, 10);
+        const pagerNF = await orm.resources.getCollection('Alone').getPager({});
+        pagerNF.get(1, 11);
         await sleep(100);
         let pks = pagerNF.get(5, 10);
         console.log('Add 1 item via $save');
-        const alone = new Alone({name: 'alone 11', score: 11, description: 'The first alone item'});
-        const alones = await orm.get('Alone', range(11));
+        const alone = new Alone({name: 'alone 12', score: 12, description: 'The first alone item'});
+        const alones = await orm.get('Alone', range(1, 11));
         await alone.$save();
-        while (pagerNF.newBasket.length === 0)
+        let attempt = 10;
+        while (attempt && (pagerNF.unplacedItems.length === 0)) {
             await sleep(50);
+            attempt --;
+        }
+        if (attempt === 0)
+            return "the Pager didn't get the latest saved item."
         let newPks = pagerNF.get(5, 10);
         if (!arrayEqual(pks, newPks))
             return 'Change done ahead of time';
