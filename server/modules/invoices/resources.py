@@ -4,7 +4,7 @@ from operator import itemgetter
 from typing import List, Dict
 
 import yaml
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, func
 from sqlalchemy.orm import DeclarativeBase
 from yaml import SafeLoader
 
@@ -43,9 +43,11 @@ class InvoiceResource(DBResource):
     async def fixture(self):
         with open(os.sep.join(os.path.dirname(__file__).split(os.sep)[:-2] + ['fixtures', 'invoices.yaml'])) as f:
             fixture = yaml.load(f, SafeLoader)
-        await db.execute(delete(Line).where(Line.id > 0))
-        await db.execute(delete(Invoice).where(Invoice.id > 0))
-        await db.execute(delete(Provider).where(Provider.id > 0))
+
+        max_provider_id = (await db.execute(select(func.max(Provider.id)))).scalar()
+        max_invoice_id = (await db.execute(select(func.max(Invoice.id)))).scalar()
+        max_line_id = (await db.execute(select(func.max(Line.id)))).scalar()
+
         for provider in fixture['providers']:
             db_provider = Provider(**{k: v for k, v in provider.items() if type(v) is not list})
             db.add(db_provider)
@@ -55,6 +57,10 @@ class InvoiceResource(DBResource):
                 for line in invoice.get('lines', ()):
                     db.add(Line(**line, invoice=db_invoice))
                 db_invoice.total_amount = sum(line['quantity'] * line['price'] for line in invoice.get('lines', ()))
+        await db.flush()
+        await db.execute(delete(Line).where(Line.id <= max_line_id))
+        await db.execute(delete(Invoice).where(Invoice.id <= max_invoice_id))
+        await db.execute(delete(Provider).where(Provider.id <= max_provider_id))
 
 
 class LineResource(DBResource):

@@ -1,13 +1,10 @@
 from datetime import date
-from operator import index
 from typing import List
 
 from sqlalchemy import ForeignKey, Integer, JSON, Float, Date
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.testing.schema import mapped_column, Table, Column
 
-from jsalchemy_api.utils import relationships
 from modules.base import BaseModel
 
 class NamedMixin:
@@ -70,15 +67,20 @@ class Folder(NamedMixin, BaseModel):
     __tablename__ = 'folder'
 
     mounts_id: Mapped[int] = mapped_column(ForeignKey('mount_point.id'), nullable=True)
+    parent_id: Mapped[int] = mapped_column(ForeignKey('folder.id'), nullable=True)
 
+    children: Mapped[List['Folder']] = relationship('Folder', remote_side=[parent_id], uselist=True)
     mounts: Mapped['MountPoint'] = relationship('MountPoint', primaryjoin='Folder.mounts_id == MountPoint.id')
+
+Folder.parent: Mapped['Folder'] = relationship('Folder', remote_side=[Folder.id])
+
 
 
 class MountPoint(NamedMixin, BaseModel):
     __tablename__ = 'mount_point'
 
     root_id: Mapped[int] = mapped_column(ForeignKey('folder.id'), nullable=True)
-    options: Mapped[dict] = mapped_column(JSON)
+    options: Mapped[dict] = mapped_column(JSON, default={})
 
     root: Mapped['Folder'] = relationship(Folder, primaryjoin=root_id == Folder.id)
 
@@ -87,8 +89,7 @@ class File(NamedMixin, BaseModel):
     __tablename__ = 'file'
 
     folder_id: Mapped[int] = mapped_column(ForeignKey('folder.id'), nullable=False)
-
-    folder: Mapped[Folder] = relationship()
+    folder: Mapped[Folder] = relationship('Folder', primaryjoin=folder_id == Folder.id, backref='files')
 
 class Tag(NamedMixin, BaseModel):
     __tablename__ = 'tag'

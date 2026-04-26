@@ -26,6 +26,12 @@ const componentsMenu = [
       { label: 'Invoices', description: 'Manage all invoices regardless of the providers',
        icon: 'i-ion-invoice-arrow-left', href: '/invoices/invoices'}
     ]},
+  { label: 'File Systen emulation', icon: 'vaadin-harddrive',
+    description: 'Fyle system emulation',
+    children: [
+      { label: 'Mount points', icon: 'vaadin-harddrive', href: '/file-system/mountpoints',
+        description: 'list all mount points available'}
+    ]}
   // {label: 'Playground', href: '/test', icon: 'i-material-symbols-playground-2-outline-rounded'},
 ]
 
