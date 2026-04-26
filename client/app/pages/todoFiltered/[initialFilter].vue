@@ -1,5 +1,9 @@
 <script lang="ts">
 import { RecordSet } from 'jsalchemy'
+import {parseInt} from "lodash";
+
+const route = useRoute();
+
 export default defineComponent({
   components: { RecordSet },
   inject: ['orm'],
@@ -29,6 +33,7 @@ export default defineComponent({
       availableRpp: [5, 10, 20, 30, 40, 50],
       filters: availableFilters,
       filter: availableFilters[0],
+      loading: true,
     }
   },
   methods: {
@@ -43,13 +48,25 @@ export default defineComponent({
     toggle(todo) {
       todo.completed = !todo.completed;
       todo.$save();
+    },
+    applyFilter(filter) {
+      navigateTo('/todoFiltered/' + filter.unique);
+      this.filter = filter;
     }
+  },
+  mounted() {
+    const initialFilter  = route.params.initialFilter;
+    const idx = this.filters.map(x => x.unique).indexOf(initialFilter);
+    if (idx >= 0) {
+      this.filter = this.filters[idx]
+    }
+    this.loading = false;
   },
 })
 </script>
 
 <template>
-  <u-card class="w-full">
+  <u-card class="w-full" v-if="!loading">
     <template #header>
       <h2>Filtered Todo list</h2>
       <p>
@@ -63,7 +80,7 @@ export default defineComponent({
         <UFieldGroup class="cursor-pointer">
           <u-badge v-for="option in filters" :key="option.label"
                    :variant="filter.label === option.label ? 'solid' : 'subtle'"
-                   @click="navigateTo('/todoFiltered/' + option.unique)">
+                   @click="applyFilter(option)">
             {{ option.label}}
           </u-badge>
         </UFieldGroup>
