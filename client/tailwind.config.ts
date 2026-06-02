@@ -1,4 +1,5 @@
-/** @type {import('tailwindcss').Config} */
+import type { Config } from 'tailwindcss';
+
 export default {
   content: [
     "./components/**/*.{js,vue,ts}",
@@ -42,7 +43,7 @@ export default {
   },
   plugins: [
     // Custom component plugin for form widgets
-    function({ addComponents, theme }) {
+    function({ addComponents, theme }: { addComponents: Function, theme: Function }) {
       addComponents({
         // Layout components
         '.layout-container': {
@@ -153,4 +154,4 @@ export default {
       })
     },
   ],
-}
+} satisfies Config;
