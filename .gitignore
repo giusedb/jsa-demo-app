@@ -31,3 +31,7 @@ client/package-lock.json
 AGENTS.md
 server/uv.lock
 .aider*
+.claude
+.gitnexus
+wiki
+CLAUDE.md
