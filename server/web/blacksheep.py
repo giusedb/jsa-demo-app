@@ -40,6 +40,15 @@ def json_response(d: dict, status=200):
             data=orjson.dumps(d),
         ))
 
+@get('/api/health')
+async def health():
+    """Health check endpoint"""
+    return json_response({
+        'status': 'ok',
+        'service': 'JSAlchemy Backend',
+        'timestamp': datetime.now().isoformat(),
+    })
+
 @post(f'/auth/register')
 async def register(body: dict) -> str:
     """Register a new user"""
