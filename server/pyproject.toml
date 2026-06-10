@@ -30,7 +30,6 @@ dependencies = [
     "pytest-mock>=3.14.0,<4",
     "blacksheep[full]>=2.0.8,<3",
     "pluralizer>=1.2.0,<2",
-    "psycopg2>=2.9.10,<3",
     "psycopg2-binary>=2.9.10,<3",
     "orjson>=3.11.1,<4",
     "fakeredis>=2.32.0,<3",
