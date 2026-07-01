@@ -13,3 +13,7 @@
 [submodule "libs/jsa-client"]
 	path = libs/jsa-client
 	url = git@github.com:giusedb/jsalchemy.git
+
+[submodule "libs/jsa-form-vue"]
+	path = libs/jsa-form-vue
+	url = git@github.com:giusedb/jsalchemy-forms-vue.git
